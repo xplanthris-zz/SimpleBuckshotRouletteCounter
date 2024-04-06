@@ -1,5 +1,5 @@
 # SimpleBuckshotRouletteCounter
-A simple, elegant, and lightweight bullet counter for Buckshot Roulette that functions as an always on top overlay.
+A simple, elegant, and lightweight bullet counter for Buckshot Roulette that functions as an always-on-top overlay.
 
 ## Features
 - Bullet counting (obviously)
