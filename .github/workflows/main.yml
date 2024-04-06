@@ -31,10 +31,11 @@ jobs:
       - name: Rename executable
         run: |
           if [ "${{ runner.os }}" == "Windows" ]; then
-            mv dist/main.exe dist/main-${{ github.sha }}.exe
+            mv dist/main.exe dist/SimpleBuckshotRouletteCounter-${{ github.sha }}.exe
           else
-            mv dist/main dist/main-${{ github.sha }}
+            mv dist/main dist/SimpleBuckshotRouletteCounter-${{ github.sha }}
           fi
+        shell: bash
       
       - uses: actions/upload-artifact@v2
         with:
@@ -63,8 +64,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist/main-${{ github.sha }}.exe
-          asset_name: main-${{ github.sha }}.exe
+          asset_path: ./dist/SimpleBuckshotRouletteCounter-${{ github.sha }}.exe
+          asset_name: SimpleBuckshotRouletteCounter-${{ github.sha }}.exe
           asset_content_type: application/octet-stream
 
       - name: Upload Release Asset (Linux)
@@ -73,6 +74,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist/main-${{ github.sha }}
-          asset_name: main-${{ github.sha }}
+          asset_path: ./dist/SimpleBuckshotRouletteCounter-${{ github.sha }}
+          asset_name: SimpleBuckshotRouletteCounter-${{ github.sha }}
           asset_content_type: application/octet-stream
