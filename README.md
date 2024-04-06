@@ -7,7 +7,7 @@ A simple, elegant, and lightweight bullet counter for Buckshot Roulette that fun
 - Autofilling for the last 2-4 items (first one to do so)
 
 ## How do I use this?
-Download the latest executable and run it, grab yours from [here](www.github.com/xplanthris/SimpleBuckshotRouletteCounter/releases/latest)
+Download the latest executable and run it, grab yours from [here](https://github.com/xplanthris/SimpleBuckshotRouletteCounter/releases/latest)
 Linux users may have to chmod +x the executable
 
 ## Contributing
