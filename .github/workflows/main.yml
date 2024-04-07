@@ -17,10 +17,10 @@ jobs:
       matrix:
         os: [windows-latest, ubuntu-latest]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
           python-version: '3.x'
       
@@ -30,14 +30,14 @@ jobs:
           pip install pyinstaller
       
       - name: Build executable
-        run: pyinstaller --onefile --name SimpleBuckshotRouletteCounter-${{ github.sha }} main.py
+        run: pyinstaller --onefile --name SimpleBuckshotRouletteCounter main.py
       
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: ${{ runner.os }}-executable
           path: |
-            dist/SimpleBuckshotRouletteCounter-${{ github.sha }}.exe
-            dist/SimpleBuckshotRouletteCounter-${{ github.sha }}
+            dist/SimpleBuckshotRouletteCounter.exe
+            dist/SimpleBuckshotRouletteCounter
 
   create-release:
     name: Create Release
@@ -45,7 +45,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download Artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           path: dist/
       
@@ -55,29 +55,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: release-${{ github.run_number }}-${{ github.sha }}
-          release_name: Release ${{ github.run_number }}-${{ github.sha }}
+          tag_name: release-${{ github.run_number }}
+          release_name: Release ${{ github.run_number }}
           draft: false
           prerelease: false
 
-      - name: Upload Release Asset (Windows)
-        if: startsWith(runner.os, 'Windows')
+      - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist/SimpleBuckshotRouletteCounter-${{ github.sha }}.exe
-          asset_name: SimpleBuckshotRouletteCounter-${{ github.sha }}.exe
-          asset_content_type: application/octet-stream
-
-      - name: Upload Release Asset (Linux)
-        if: startsWith(runner.os, 'Linux')
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist/SimpleBuckshotRouletteCounter-${{ github.sha }}
-          asset_name: SimpleBuckshotRouletteCounter-${{ github.sha }}
+          asset_path: ./dist/SimpleBuckshotRouletteCounter${{ endsWith(matrix.os, 'windows-latest') && '.exe' || '' }}
+          asset_name: SimpleBuckshotRouletteCounter${{ endsWith(matrix.os, 'windows-latest') && '.exe' || '' }}
           asset_content_type: application/octet-stream
