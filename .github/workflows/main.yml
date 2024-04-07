@@ -24,6 +24,6 @@ jobs:
         path: ./
 
     - name: Upload Artifact
-      uses: actions/upload-artifact@v2
+      uses: softprops/action-gh-release@v2
       with:
-        path: ./dist/windows
+        files: ./dist/windows/SimpleBuckshotRouletteCounter.exe
