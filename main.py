@@ -108,7 +108,20 @@ class SimpleBuckshotRouletteCounter:
     def use_burner_phone(self):
         if self.current_bullet_index < len(self.bullets):
             position = simpledialog.askinteger("Burner Phone", "Enter the bullet position (1-indexed):", parent=self.master) - 1
-            bullet_type = simpledialog.askstring("Burner Phone", "Enter the bullet type (L)ive or (B)lank:", parent=self.master)
+            bullet_type_input = simpledialog.askstring("Burner Phone", "Enter the bullet type (L)ive or (B)lank:", parent=self.master)
+        
+            if bullet_type_input is not None:
+                bullet_type_input = bullet_type_input.strip().upper()
+                if bullet_type_input in ["L", "LIVE"]:
+                    bullet_type = "L"
+                elif bullet_type_input in ["B", "BLANK"]:
+                    bullet_type = "B"
+                else:
+                    messagebox.showerror("Error", "Invalid bullet type. Please enter 'Live' or 'Blank'.")
+                    return
+            else:
+                messagebox.showerror("Error", "No bullet type entered. Please try again.")
+                return
 
             if position is not None and bullet_type in ["L", "B"]:
                 self.bullets[position] = bullet_type
