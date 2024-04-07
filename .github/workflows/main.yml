@@ -32,13 +32,22 @@ jobs:
       - name: Build executable
         run: pyinstaller --onefile --name SimpleBuckshotRouletteCounter main.py
       
+      - name: Adjust file name for OS
+        run: |
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            mv dist/SimpleBuckshotRouletteCounter.exe dist/SimpleBuckshotRouletteCounter-windows.exe
+          else
+            mv dist/SimpleBuckshotRouletteCounter dist/SimpleBuckshotRouletteCounter-linux
+          fi
+        shell: bash
+
       - uses: actions/upload-artifact@v3
         with:
-          name: ${{ runner.os }}-executable
+          name: executable-${{ runner.os }}
           path: |
-            dist/SimpleBuckshotRouletteCounter.exe
-            dist/SimpleBuckshotRouletteCounter
-
+            dist/SimpleBuckshotRouletteCounter-windows.exe
+            dist/SimpleBuckshotRouletteCounter-linux
+          
   create-release:
     name: Create Release
     needs: build
@@ -59,13 +68,13 @@ jobs:
           release_name: Release ${{ github.run_number }}
           draft: false
           prerelease: false
-
+          
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist/SimpleBuckshotRouletteCounter${{ endsWith(matrix.os, 'windows-latest') && '.exe' || '' }}
-          asset_name: SimpleBuckshotRouletteCounter${{ endsWith(matrix.os, 'windows-latest') && '.exe' || '' }}
+          asset_path: ./dist/SimpleBuckshotRouletteCounter-${{ matrix.os == 'windows-latest' && 'windows.exe' || 'linux' }}
+          asset_name: SimpleBuckshotRouletteCounter-${{ matrix.os == 'windows-latest' && 'windows.exe' || 'linux' }}
           asset_content_type: application/octet-stream
