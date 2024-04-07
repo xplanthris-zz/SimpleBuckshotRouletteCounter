@@ -7,23 +7,19 @@ jobs:
     name: Create Release
     runs-on: ubuntu-latest
     steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+      
     - name: Create Release
       id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: softprops/action-gh-release@v1
       with:
         tag_name: ${{ github.sha }}
-        release_name: Release ${GITHUB_SHA:0:7}
+        name: Release ${GITHUB_SHA:0:7}
         draft: false
         prerelease: false
-    - name: Output Release URL File
-      run: echo "${{ steps.create_release.outputs.upload_url }}" > release_url.txt
-    - name: Save Release URL File for publish
-      uses: actions/upload-artifact@v2
-      with:
-        name: release_url
-        path: release_url.txt
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build:
     name: Build packages
@@ -34,10 +30,10 @@ jobs:
         include:
           - os: macos-latest
             TARGET: macos
-            CMD_BUILD: >
+            CMD_BUILD: |
                 pyinstaller --onefile main.py &&
                 cd dist/ &&
-                zip -r9 SimpleBuckshotRouletteHelper SimpleBuckshotRouletteHelper.app/                
+                zip -r9 SimpleBuckshotRouletteHelper-macos.zip SimpleBuckshotRouletteHelper.app/
             OUT_FILE_NAME: SimpleBuckshotRouletteHelper-macos.zip
             ASSET_MIME: application/zip
           - os: windows-latest
@@ -46,39 +42,29 @@ jobs:
             OUT_FILE_NAME: SimpleBuckshotRouletteHelper-windows.exe
             ASSET_MIME: application/vnd.microsoft.portable-executable
           - os: ubuntu-latest
-            TARGET: ubuntu
+            TARGET: linux
             CMD_BUILD: pyinstaller --onefile main.py
             OUT_FILE_NAME: SimpleBuckshotRouletteHelper-linux
             ASSET_MIME: application/octet-stream
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
+
     - name: Set up Python 3.8
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v3
       with:
         python-version: 3.8
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install pyinstaller
-    - name: Build with pyinstaller for ${{matrix.TARGET}}
-      run: ${{matrix.CMD_BUILD}}
-    - name: Load Release URL File from release job
-      uses: actions/download-artifact@v2
-      with:
-        name: release_url
-    - name: Get Release File Name & Upload URL
-      id: get_release_info
-      shell: bash
-      run: |
-        value=`cat release_url/release_url.txt`
-        echo ::set-output name=upload_url::$value
+
+    - name: Build with PyInstaller for ${{ matrix.TARGET }}
+      run: ${{ matrix.CMD_BUILD }}
+
     - name: Upload Release Asset
-      id: upload-release-asset
-      uses: actions/upload-release-asset@v1
+      uses: softprops/action-gh-release@v1
+      with:
+        files: ./dist/${{ matrix.OUT_FILE_NAME }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.get_release_info.outputs.upload_url }}
-        asset_path: ./dist/${{ matrix.OUT_FILE_NAME}}
-        asset_name: ${{ matrix.OUT_FILE_NAME}}
-        asset_content_type: ${{ matrix.ASSET_MIME}}
