@@ -41,18 +41,13 @@ class SimpleBuckshotRouletteCounter:
             if total_bullets > 8:
                 messagebox.showerror("Error", "Too many bullets. Maximum allowed is 8.")
                 return
-
-            live = simpledialog.askinteger("New Round", "How many live bullets?", parent=self.master)
-            if live is None:
-                return
-
-            blank = simpledialog.askinteger("New Round", "How many blank bullets?", parent=self.master)
-            if blank is None:
-                return
-
-            if live + blank != total_bullets:
-                messagebox.showerror("Error", "Bullets do not add up.")
-                return
+            
+            if (total_bullets % 2) == 0:
+                blank = total_bullets // 2
+                live = total_bullets // 2
+            else:
+                blank = (total_bullets // 2) + 1 
+                live = total_bullets // 2
 
             self.bullets = [None] * total_bullets
             self.live = live
