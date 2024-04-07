@@ -23,3 +23,6 @@ Linux users may have to `chmod +x` the executable
 
 ## Contributing
 Contributions like code changes, documentation, or new features. The best way of contributing code to SimpleBuckshotRouletteCounter is to open a pull request.
+
+## Special Thanks
+- [www.github.com/TheLazyHatGuy](TheLazyHatGuy), for writing the workflow (I blew my head over it), fixing up the readme, and helping me out with GUI design!
