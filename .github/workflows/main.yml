@@ -21,9 +21,10 @@ jobs:
     - name: Package Application
       uses: JackMcKew/pyinstaller-action-windows@main
       with:
-        path: src
+        path: ./
 
-    - uses: actions/upload-artifact@v2
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v2
       with:
         name: SimpleBuckshotRouletteCounter
-        path: src/dist/windows
+        path: ./dist/windows
