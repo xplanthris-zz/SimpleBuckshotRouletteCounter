@@ -1,5 +1,7 @@
 import tkinter as tk
 from tkinter import simpledialog, messagebox
+import keyboard
+import threading
 
 class SimpleBuckshotRouletteCounter:
     def __init__(self, master):
@@ -31,6 +33,21 @@ class SimpleBuckshotRouletteCounter:
 
         self.blank_button = tk.Button(master, text="Blank", command=lambda: self.mark_bullet("B"))
         self.blank_button.pack(side=tk.LEFT)
+
+    def setup_global_keybindings(self):
+        keyboard.add_hotkey('q', self.mark_bullet_global, args=('L',))
+        keyboard.add_hotkey('e', self.mark_bullet_global, args=('B',))
+        keyboard.add_hotkey('r', self.new_round_global)
+        keyboard.add_hotkey('f', self.use_burner_phone_global)
+
+    def mark_bullet_global(self, bullet_type):
+        self.master.after(0, self.mark_bullet, bullet_type)
+
+    def new_round_global(self):
+        self.master.after(0, self.new_round)
+
+    def use_burner_phone_global(self):
+        self.master.after(0, self.use_burner_phone)
 
     def new_round(self):
         try:
@@ -150,6 +167,7 @@ class SimpleBuckshotRouletteCounter:
 def main():
     root = tk.Tk()
     app = SimpleBuckshotRouletteCounter(root)
+    threading.Thread(target=app.setup_global_keybindings, daemon=True).start()
     root.mainloop()
 
 if __name__ == "__main__":
