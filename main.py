@@ -148,21 +148,28 @@ class SimpleBuckshotRouletteCounter:
             self.new_round()
 
     def autofill_check(self):
-        remaining_slots = self.bullets.count(None)
-        if remaining_slots == self.live:
-            for i in range(len(self.bullets)):
-                if self.bullets[i] is None:
-                    self.bullets[i] = "L"
-                    if self.live > 0: 
-                        self.live -= 1
-        elif remaining_slots == self.blank:
-            for i in range(len(self.bullets)):
-                if self.bullets[i] is None:
-                    self.bullets[i] = "B"
-                    if self.blank > 0:
-                        self.blank -= 1
+        unmarked_slots = self.bullets.count(None)
+        marked_live = self.bullets.count("L")
+        marked_blank = self.bullets.count("B")
+
+        remaining_live = self.live - marked_live
+        remaining_blank = self.blank - marked_blank
+
+        bullets_left_to_check = len(self.bullets) - self.current_bullet_index
+
+        if bullets_left_to_check <= 4:
+            if remaining_live > 0 and remaining_live == unmarked_slots:
+                for i in range(len(self.bullets)):
+                    if self.bullets[i] is None:
+                        self.bullets[i] = "L"
+        
+            elif remaining_blank > 0 and remaining_blank == unmarked_slots:
+                for i in range(len(self.bullets)):
+                    if self.bullets[i] is None:
+                        self.bullets[i] = "B"
 
         self.update_labels()
+
 
 def main():
     root = tk.Tk()
