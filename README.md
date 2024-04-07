@@ -7,8 +7,19 @@ A simple, elegant, and lightweight bullet counter for Buckshot Roulette that fun
 - Autofilling for the last 2-4 items (first one to do so)
 
 ## How do I use this?
-~~Download the latest executable and run it, grab yours from [here](https://github.com/xplanthris/SimpleBuckshotRouletteCounter/releases/latest)
-Linux users may have to chmod +x the executable~~ For now, download the repository, extract it, and python main.py
+### Option 1: EXE
+Download the latest executable and run it, grab yours from [here](https://github.com/xplanthris/SimpleBuckshotRouletteCounter/releases/latest)
+
+Linux users may have to `chmod +x` the executable
+
+### Option 2: Clone project
+1. Install [Python 3](https://www.python.org/downloads/)
+2. Download repo either as a zip file or git clone
+   1. [Download ZIP](https://github.com/xplanthris/SimpleBuckshotRouletteCounter/archive/refs/heads/main.zip) and extract the folder
+   2. `git clone https://github.com/xplanthris/SimpleBuckshotRouletteCounter.git`
+3. `cd SimpleBuckshotRouletteCounter`
+4. `pip install -r requirements.txt`
+5. `python main.py`
 
 ## Contributing
 Contributions like code changes, documentation, or new features. The best way of contributing code to SimpleBuckshotRouletteCounter is to open a pull request.

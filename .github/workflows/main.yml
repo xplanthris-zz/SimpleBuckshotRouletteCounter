@@ -1,0 +1,30 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - "v*"
+      - "v*.*.*"
+      - "release-*"
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Package Application
+      uses: JackMcKew/pyinstaller-action-windows@main
+      with:
+        path: ./
+
+    - name: Upload Artifact
+      uses: softprops/action-gh-release@v2
+      with:
+        files: ./dist/windows/SimpleBuckshotRouletteCounter.exe
