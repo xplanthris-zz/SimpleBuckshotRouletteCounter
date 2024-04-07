@@ -1,14 +1,39 @@
-import tkinter as tk
-from tkinter import simpledialog, messagebox
-import keyboard
+# TODO: Create BulletTable.py
+# TODO: Fix keybinds
+# TODO: Make seperate file for keybinds
+# TODO: Make seperate file for application logic
+# TODO: Find a replacement for simpledialog
+# TODO: Add inverter support
+
 import threading
+import os
+import platform
+from tkinter import simpledialog, messagebox
+import sys
+from Bullet import Bullet
+
+try:
+    import customtkinter as ctk
+except:
+    messagebox.showerror("Error", "Please make sure you have ran pip install -r requirements.txt")
+    sys.exit(1)
+
+def check_admin_privileges():
+    if platform.system() == "Windows":
+        try:
+            import ctypes
+            return ctypes.windll.shell32.IsUserAnAdmin() != 0
+        except:
+            return False
+    else:
+        return os.geteuid() == 0
 
 class SimpleBuckshotRouletteCounter:
     def __init__(self, master):
         self.master = master
         self.master.title("SimpleBuckshotRouletteCounter")
         self.master.resizable(width=False, height=False)
-        self.master.geometry("300x60")
+        self.master.geometry("300x150")
         self.master.attributes("-topmost", True)
 
         self.live = 0
@@ -16,32 +41,30 @@ class SimpleBuckshotRouletteCounter:
         self.bullets = []
         self.current_bullet_index = 0
 
-        self.live_label = tk.Label(master, text="Live: 0 (0%)")
-        self.live_label.pack()
+        self.live_label = ctk.CTkLabel(master, text="Live: 0 (0%)")
+        self.live_label.grid(row=0, column=0, columnspan=2, pady=(10, 0), padx=10)
 
-        self.blank_label = tk.Label(master, text="Blank: 0 (0%)")
-        self.blank_label.pack()
+        self.blank_label = ctk.CTkLabel(master, text="Blank: 0 (0%)")
+        self.blank_label.grid(row=1, column=0, columnspan=2, pady=(0, 10), padx=10)
 
-        self.live_button = tk.Button(master, text="Live", command=lambda: self.mark_bullet("L"))
-        self.live_button.pack(side=tk.LEFT)
+        self.live_button = ctk.CTkButton(master, text="Live", command=lambda: self.mark_bullet(Bullet.LIVE), fg_color="red")
+        self.live_button.grid(row=2, column=0, sticky="ew", padx=5, pady=5)
 
-        self.new_round_button = tk.Button(master, text="New Round", command=self.new_round)
-        self.new_round_button.pack(side=tk.LEFT)
+        self.blank_button = ctk.CTkButton(master, text="Blank", command=lambda: self.mark_bullet(Bullet.BLANK), fg_color="blue")
+        self.blank_button.grid(row=2, column=1, sticky="ew", padx=5, pady=5)
 
-        self.burner_phone_button = tk.Button(master, text="Burner Phone", command=self.use_burner_phone)
-        self.burner_phone_button.pack(side=tk.LEFT)
+        self.new_round_button = ctk.CTkButton(master, text="New Round", command=self.new_round, fg_color="grey")
+        self.new_round_button.grid(row=3, column=0, sticky="ew", padx=5, pady=5)
 
-        self.blank_button = tk.Button(master, text="Blank", command=lambda: self.mark_bullet("B"))
-        self.blank_button.pack(side=tk.LEFT)
+        self.burner_phone_button = ctk.CTkButton(master, text="Burner Phone", command=self.use_burner_phone, fg_color="grey")
+        self.burner_phone_button.grid(row=3, column=1, sticky="ew", padx=5, pady=5)
 
-    def setup_global_keybindings(self):
-        keyboard.add_hotkey('q', self.mark_bullet_global, args=('L',))
-        keyboard.add_hotkey('e', self.mark_bullet_global, args=('B',))
-        keyboard.add_hotkey('r', self.new_round_global)
-        keyboard.add_hotkey('f', self.use_burner_phone_global)
+        master.grid_columnconfigure(0, weight=1)
+        master.grid_columnconfigure(1, weight=1)
 
     def mark_bullet_global(self, bullet_type):
         self.master.after(0, self.mark_bullet, bullet_type)
+        self.update_labels()
 
     def new_round_global(self):
         self.master.after(0, self.new_round)
@@ -51,54 +74,50 @@ class SimpleBuckshotRouletteCounter:
 
     def new_round(self):
         try:
-            total_bullets = simpledialog.askinteger("New Round", "How many bullets are there?", parent=self.master)
+            total_bullets = simpledialog.askinteger("New Round", "How many bullets are there?", parent=self.master, minvalue=2, maxvalue=8)
             if total_bullets is None:
                 return
 
-            if total_bullets > 8:
-                messagebox.showerror("Error", "Too many bullets. Maximum allowed is 8.")
-                return
-            
-            if (total_bullets % 2) == 0:
-                blank = total_bullets // 2
-                live = total_bullets // 2
-            else:
-                blank = (total_bullets // 2) + 1 
-                live = total_bullets // 2
+            live = total_bullets // 2
+            blank = total_bullets - live
 
-            self.bullets = [None] * total_bullets
+            self.bullets = [Bullet.UNKNOWN] * total_bullets
             self.live = live
             self.blank = blank
             self.current_bullet_index = 0
+
             self.update_labels()
         except Exception as e:
-            messagebox.showerror("Error", "Invalid input. Please try again.")
-
-
+            messagebox.showerror("Error", f"Invalid input or error occurred: {e}. Please try again.")
 
     def mark_bullet(self, bullet_type):
-        if self.current_bullet_index < len(self.bullets) and self.bullets[self.current_bullet_index] is None:
+        if self.current_bullet_index < len(self.bullets) and self.bullets[self.current_bullet_index] is Bullet.UNKNOWN:
             self.bullets[self.current_bullet_index] = bullet_type
-
-            if bullet_type == "L":
-                if self.live > 0:
-                    self.live -= 1
-            else:
-                if self.blank > 0:
-                    self.blank -= 1
+            if bullet_type == Bullet.LIVE and self.live > 0:
+                self.live -= 1
+            elif bullet_type == Bullet.BLANK and self.blank > 0:
+                self.blank -= 1
 
             self.autofill_check()
             self.update_labels()
 
         self.proceed_to_next_bullet()
 
-    def proceed_to_next_bullet(self):        
+    def proceed_to_next_bullet(self):
         self.current_bullet_index += 1
         if self.current_bullet_index < len(self.bullets):
-            if self.bullets[self.current_bullet_index] is not None:
+            if self.bullets[self.current_bullet_index] is not Bullet.UNKNOWN:
                 bullet_type = self.bullets[self.current_bullet_index]
-                bullet_description = "live" if bullet_type == "L" else "blank"
+                bullet_description = "live" if bullet_type in [Bullet.LIVE, Bullet.LIVE_MARKED] else "blank"
                 messagebox.showinfo("Bullet Predetermined", f"This bullet is a {bullet_description}.")
+                if bullet_description == "live":
+                    self.live -= 1
+                    # Turn marked bullets into unmarked as we have seen them
+                    self.bullets[self.current_bullet_index] = Bullet.LIVE
+                else:
+                    self.blank -= 1
+                    # Turn marked bullets into unmarked as we have seen them
+                    self.bullets[self.current_bullet_index] = Bullet.BLANK
                 self.update_labels()
                 self.proceed_to_next_bullet()
         else:
@@ -114,67 +133,74 @@ class SimpleBuckshotRouletteCounter:
             live_percent = 0
             blank_percent = 0
 
-        self.live_label.config(text=f"Live: {self.live} ({live_percent:.2f}%)")
-        self.blank_label.config(text=f"Blank: {self.blank} ({blank_percent:.2f}%)")
+        self.live_label.configure(text=f"Live: {self.live} ({live_percent:.2f}%)")
+        self.blank_label.configure(text=f"Blank: {self.blank} ({blank_percent:.2f}%)")
 
     def use_burner_phone(self):
         if self.current_bullet_index < len(self.bullets):
             position = simpledialog.askinteger("Burner Phone", "Enter the bullet position (1-indexed):", parent=self.master) - 1
+            if position is None or position < 0 or position >= len(self.bullets):
+                messagebox.showerror("Error", "Invalid bullet position.")
+                return
+
             bullet_type_input = simpledialog.askstring("Burner Phone", "Enter the bullet type (L)ive or (B)lank:", parent=self.master)
-        
-            if bullet_type_input is not None:
-                bullet_type_input = bullet_type_input.strip().upper()
-                if bullet_type_input in ["L", "LIVE"]:
-                    bullet_type = "L"
-                elif bullet_type_input in ["B", "BLANK"]:
-                    bullet_type = "B"
-                else:
-                    messagebox.showerror("Error", "Invalid bullet type. Please enter 'Live' or 'Blank'.")
-                    return
-            else:
+            if bullet_type_input is None:
                 messagebox.showerror("Error", "No bullet type entered. Please try again.")
                 return
 
-            if position is not None and bullet_type in ["L", "B"]:
-                self.bullets[position] = bullet_type
-                self.autofill_check()
-                self.update_labels()
-                bullet_description = "live" if bullet_type == "L" else "blank"
-                messagebox.showinfo("Burner Phone", f"The bullet at position {position + 1} is marked as {bullet_description}.")
+            bullet_type_input = bullet_type_input.strip().upper()
+            if bullet_type_input not in ["L", "B", "LIVE", "BLANK"]:
+                messagebox.showerror("Error", "Invalid bullet type. Please enter 'Live' or 'Blank'.")
+                return
+            
+            # We mark burner phone bullets in a special way so that autofill does not s*** itself
+            if bullet_type_input in ["L", "LIVE"]:
+                bullet_type_input = Bullet.LIVE_MARKED
             else:
-                messagebox.showerror("Error", "Invalid input. Please try again.")
+                bullet_type_input = Bullet.BLANK_MARKED
+
+            self.bullets[position] = bullet_type_input
+            self.autofill_check()
+            self.update_labels()
+            bullet_description = "live" if bullet_type_input == "LM" else "blank"
+            messagebox.showinfo("Burner Phone", f"The bullet at position {position + 1} is marked as {bullet_description}.")
         else:
             messagebox.showinfo("Round Complete", "This round has ended. Starting a new round.")
             self.new_round()
 
     def autofill_check(self):
-        unmarked_slots = self.bullets.count(None)
-        marked_live = self.bullets.count("L")
-        marked_blank = self.bullets.count("B")
-
-        remaining_live = self.live - marked_live
-        remaining_blank = self.blank - marked_blank
-
-        bullets_left_to_check = len(self.bullets) - self.current_bullet_index
-
-        if bullets_left_to_check <= 4:
-            if remaining_live > 0 and remaining_live == unmarked_slots:
+        # Since this is the most complicated part of the code, I'll explain
+        # We have 2 cases
+        # 1. Fill case, [Live, Live, None, None] 2 blanks, this is an easy fill
+        # 2. The harder more gut wrenching case, gap cases, [Live, Live, None, Live, None] now technically we have 1 live and 2 blanks but we cannot just fill it like that so instead what we did was bullets marked by the burner phone are marked as LM or BM so we count the *M(s) 
+        # and now IF the amount of *M unit subtracted by the L / B unit = 0 this means ok there is only this we fill all None(s)
+        # - xplanthris sunday apr 7 8:09 pm
+        if self.live == 0 and self.blank != 0:
+            for i in range(len(self.bullets)):
+                if self.bullets[i] is Bullet.UNKNOWN:
+                    self.bullets[i] = Bullet.BLANK
+        elif self.blank == 0 and self.live != 0:
+            for i in range(len(self.bullets)):
+                if self.bullets[i] is Bullet.UNKNOWN:
+                    self.bullets[i] = Bullet.LIVE
+        else:
+            if self.bullets.count(Bullet.BLANK_MARKED) != 0 and self.bullets.count(Bullet.LIVE_MARKED) == 0 and self.blank - self.bullets.count(Bullet.BLANK_MARKED) == 0:
                 for i in range(len(self.bullets)):
-                    if self.bullets[i] is None:
-                        self.bullets[i] = "L"
-        
-            elif remaining_blank > 0 and remaining_blank == unmarked_slots:
+                    if self.bullets[i] is Bullet.UNKNOWN:
+                        self.bullets[i] = Bullet.LIVE
+            elif self.bullets.count(Bullet.BLANK_MARKED) == 0 and self.bullets.count(Bullet.LIVE_MARKED) != 0 and self.live - self.bullets.count(Bullet.LIVE_MARKED) == 0:
                 for i in range(len(self.bullets)):
-                    if self.bullets[i] is None:
-                        self.bullets[i] = "B"
-
-        self.update_labels()
-
+                    if self.bullets[i] is Bullet.UNKNOWN:
+                        self.bullets[i] = Bullet.BLANK
 
 def main():
-    root = tk.Tk()
+    if not check_admin_privileges():
+        messagebox.showwarning("Warning", "Please run this application with administrative privileges for keybinds to function properly.")
+    
+    ctk.set_appearance_mode("Dark")
+    ctk.set_default_color_theme("blue")
+    root = ctk.CTk()
     app = SimpleBuckshotRouletteCounter(root)
-    threading.Thread(target=app.setup_global_keybindings, daemon=True).start()
     root.mainloop()
 
 if __name__ == "__main__":
