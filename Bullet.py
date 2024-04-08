@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class Bullet(Enum):
     """
     An enumeration for representing the types of bullets in the SimpleBuckshotRouletteCounter.

@@ -1,5 +1,6 @@
 import os, platform, ctypes
 
+
 def check_admin_privileges():
     """A function that checks if the program is being run as an administrator
 
