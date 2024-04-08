@@ -1,7 +1,4 @@
-# TODO: Put application logic here
-# TODO: Switch to return-oriented OOP
-# TODO: Add inverter support
-# TODO: Find a replacement for simpledialog / messagebox
+# TODO: Fix keybind support
 
 from Bullet import Bullet
 from tkinter import simpledialog, messagebox
@@ -13,7 +10,7 @@ class SimpleBuckshotRouletteCounter:
         self.master = master
         self.master.title("SimpleBuckshotRouletteCounter")
         self.master.resizable(width=False, height=False)
-        self.master.geometry("300x150")
+        self.master.geometry("400x128")
         self.master.attributes("-topmost", True)
 
         self.live = 0
@@ -22,22 +19,25 @@ class SimpleBuckshotRouletteCounter:
         self.current_bullet_index = 0
 
         self.live_label = ctk.CTkLabel(master, text="Live: 0 (0%)")
-        self.live_label.grid(row=0, column=0, columnspan=2, pady=(10, 0), padx=10)
+        self.live_label.grid(row=1, column=0, columnspan=1, pady=(10, 0), padx=10)
 
         self.blank_label = ctk.CTkLabel(master, text="Blank: 0 (0%)")
-        self.blank_label.grid(row=1, column=0, columnspan=2, pady=(0, 10), padx=10)
+        self.blank_label.grid(row=1, column=2, columnspan=1, pady=(10, 0), padx=10)
 
         self.live_button = ctk.CTkButton(master, text="Live", command=lambda: self.mark_bullet(Bullet.LIVE), fg_color="red")
         self.live_button.grid(row=2, column=0, sticky="ew", padx=5, pady=5)
 
         self.blank_button = ctk.CTkButton(master, text="Blank", command=lambda: self.mark_bullet(Bullet.BLANK), fg_color="blue")
-        self.blank_button.grid(row=2, column=1, sticky="ew", padx=5, pady=5)
+        self.blank_button.grid(row=2, column=2, sticky="ew", padx=5, pady=5)
 
         self.new_round_button = ctk.CTkButton(master, text="New Round", command=self.new_round, fg_color="grey")
         self.new_round_button.grid(row=3, column=0, sticky="ew", padx=5, pady=5)
 
+        self.new_round_button = ctk.CTkButton(master, text="Polarizer", command=self.use_polarizer, fg_color="grey")
+        self.new_round_button.grid(row=3, column=1, sticky="ew", padx=5, pady=5)
+
         self.burner_phone_button = ctk.CTkButton(master, text="Burner Phone", command=self.use_burner_phone, fg_color="grey")
-        self.burner_phone_button.grid(row=3, column=1, sticky="ew", padx=5, pady=5)
+        self.burner_phone_button.grid(row=3, column=2, sticky="ew", padx=5, pady=5)
 
         master.grid_columnconfigure(0, weight=1)
         master.grid_columnconfigure(1, weight=1)
@@ -48,8 +48,21 @@ class SimpleBuckshotRouletteCounter:
             if total_bullets is None:
                 return
 
-            live = total_bullets // 2
-            blank = total_bullets - live
+            if total_bullets % 2 != 0:
+                more_what = simpledialog.askstring("New Round", "Is there move (L)ive's or (B)lank's?")
+                if more_what is None:
+                    return
+                else:
+                    if more_what.strip().upper() in ["L", "LIVE"]:
+                        blank = total_bullets // 2
+                        live = total_bullets - blank
+                    else:
+                        live = total_bullets // 2
+                        blank = total_bullets - live
+            else:
+                live = total_bullets // 2
+                blank = total_bullets // 2
+            
 
             self.bullets = [Bullet.UNKNOWN] * total_bullets
             self.live = live
@@ -132,11 +145,32 @@ class SimpleBuckshotRouletteCounter:
             self.bullets[position] = bullet_type_input
             self.autofill_check()
             self.update_labels()
-            bullet_description = "live" if bullet_type_input == "LM" else "blank"
+            bullet_description = "live" if bullet_type_input == Bullet.LIVE_MARKED else "blank"
             messagebox.showinfo("Burner Phone", f"The bullet at position {position + 1} is marked as {bullet_description}.")
         else:
             messagebox.showinfo("Round Complete", "This round has ended. Starting a new round.")
             self.new_round()
+
+    def use_polarizer(self):
+        if self.current_bullet_index < len(self.bullets):
+            if self.bullets[self.current_bullet_index] in [Bullet.LIVE_MARKED, Bullet.BLANK_MARKED]:
+                if self.bullets[self.current_bullet_index] == Bullet.LIVE_MARKED:
+                    self.blank -= 1
+                else:
+                    self.live -= 1
+            else:
+                bullet_type = simpledialog.askstring("Polarizer", "What was the bullet inverted to? (L)ive or (B)lank?")
+                if bullet_type is None:
+                    return
+                if bullet_type.strip().upper() not in ["L", "LIVE", "B", "BLANK"]:
+                    messagebox("Invalid input", "Please enter a valid type")
+                else:
+                    if bullet_type.strip().upper() in ["L", "LIVE"]:
+                        self.blank -= 1
+                    else:
+                        self.live -= 1
+            self.update_labels()
+            self.current_bullet_index += 1
 
     def autofill_check(self):
         # Since this is the most complicated part of the code, I'll explain
