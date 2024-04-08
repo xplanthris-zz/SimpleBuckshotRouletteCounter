@@ -8,6 +8,7 @@
 
 <p align="center">
   <a href="#info">Info</a> •
+  <a href="#usage">Usage</a>
   <a href="#download">Download</a> •
   <a href="#contributing">Contributing</a>
 </p>
@@ -19,6 +20,17 @@
 ## Info
 
 SimpleBuckshotRouletteCounter is a bullet counter for the video game Buckshot Roulette by Mike Klubnika. It features several features such as autofill, burner phone and polarizer support, and a sleek overlay GUI.
+
+## Usage
+
+To use SimpleBuckshotRouletteCounter, download it, and run!
+
+The keybindings are as follows:
+- Live: Q
+- Blank: E
+- New Round: Z
+- Burner Phone: F
+- Polarizer: T
 
 ## Download
 
