@@ -42,6 +42,12 @@ class SimpleBuckshotRouletteCounter:
         master.grid_columnconfigure(0, weight=1)
         master.grid_columnconfigure(1, weight=1)
 
+    def mark_live(self):
+        self.mark_bullet(Bullet.LIVE)
+
+    def mark_blank(self):
+        self.mark_bullet(Bullet.BLANK)
+
     def new_round(self):
         try:
             total_bullets = simpledialog.askinteger("New Round", "How many bullets are there?", parent=self.master, minvalue=2, maxvalue=8)
