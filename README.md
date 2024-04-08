@@ -49,4 +49,4 @@ Download the latest executable from [here](https://github.com/xplanthris/SimpleB
 5. `python main.py`
 
 ## Contributing
-Contributions like code changes, documentation, or new features. The best way of contributing code to [SimpleBuckshotRouletteCounter](www.github.com/xplanthris/SimpleBuckshotRouletteCounter) is to open a pull request.
+Contributions like code changes, documentation, or new features. The best way of contributing code to [SimpleBuckshotRouletteCounter](./) is to open a pull request.
